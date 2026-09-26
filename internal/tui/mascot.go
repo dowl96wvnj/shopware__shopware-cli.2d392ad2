@@ -98,9 +98,9 @@ func renderMascot(targetWidth int) string {
 		case dashChar:
 			return 0
 		case '▓':
-			return 2
-		case '▒':
 			return 1
+		case '▒':
+			return 2
 		default:
 			return 3
 		}
@@ -123,7 +123,7 @@ func renderMascot(targetWidth int) string {
 
 	maxW := 0
 	for _, line := range lines {
-		if w := len(line); w > maxW {
+		if w := len([]rune(line)); w > maxW {
 			maxW = w
 		}
 	}
@@ -166,7 +166,7 @@ func renderMascot(targetWidth int) string {
 		if len(batch) > 0 {
 			result.WriteString(styleOf(batch[0]).Render(string(batch)))
 		}
-		if i <= len(lines)-1 {
+		if i < len(lines)-1 {
 			result.WriteByte('\n')
 		}
 	}
