@@ -561,7 +561,7 @@ func createConfigFromPath(entryPointName string, extensionRoot string) *Extensio
 	}
 
 	if _, err := os.Stat(path.Join(extensionRoot, AdministrationWebpackCJSConfig)); err == nil {
-		val := AdministrationWebpackConfig
+		val := AdministrationWebpackCJSConfig
 		webpackFileAdmin = &val
 	}
 
@@ -571,7 +571,7 @@ func createConfigFromPath(entryPointName string, extensionRoot string) *Extensio
 	}
 
 	if _, err := os.Stat(path.Join(extensionRoot, StorefrontEntrypointTS)); err == nil {
-		val := StorefrontEntrypointJS
+		val := StorefrontEntrypointTS
 		entryFilePathStorefront = &val
 	}
 
@@ -589,14 +589,14 @@ func createConfigFromPath(entryPointName string, extensionRoot string) *Extensio
 		storefrontStyles = append(storefrontStyles, StorefrontBaseCSS)
 	}
 
-	extensionRoot = strings.TrimRight(extensionRoot, "/")
+	extensionRoot = strings.TrimRight(extensionRoot, "/") + "/"
 
 	cfg := ExtensionAssetConfigEntry{
 		BasePath: extensionRoot,
 		Views: []string{
 			"Resources/views",
 		},
-		TechnicalName: entryPointName,
+		TechnicalName: esbuild.ToKebabCase(entryPointName),
 		Administration: ExtensionAssetConfigAdmin{
 			Path:          "Resources/app/administration/src",
 			EntryFilePath: entryFilePathAdmin,
