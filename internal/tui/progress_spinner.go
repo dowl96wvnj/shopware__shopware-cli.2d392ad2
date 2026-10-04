@@ -180,7 +180,7 @@ func (m *installProgressModel) View() tea.View {
 			b.WriteString(titleStyle.Render(m.title))
 			b.WriteString("\n\n")
 
-			lines := m.logWriter.GetLastLines(11)
+			lines := m.logWriter.GetLastLines(12)
 			logStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#FF4D4D")).PaddingLeft(2)
 			for _, line := range lines {
 				b.WriteString(logStyle.Render(line))
@@ -197,9 +197,9 @@ func (m *installProgressModel) View() tea.View {
 
 	var hint string
 	if m.showLogs {
-		hint = lipgloss.NewStyle().Foreground(lipgloss.Color("#666666")).Render(" (Ctrl+L to see live log)")
-	} else {
 		hint = lipgloss.NewStyle().Foreground(lipgloss.Color("#666666")).Render(" (Ctrl+L to hide live log)")
+	} else {
+		hint = lipgloss.NewStyle().Foreground(lipgloss.Color("#666666")).Render(" (Ctrl+L to see live log)")
 	}
 
 	b.WriteString(spinnerStr)
@@ -215,7 +215,7 @@ func (m *installProgressModel) View() tea.View {
 		var logBody strings.Builder
 		for i, line := range lines {
 			logBody.WriteString(line)
-			if i < len(lines) {
+			if i < len(lines)-1 {
 				logBody.WriteString("\n")
 			}
 		}
