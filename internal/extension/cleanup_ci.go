@@ -67,7 +67,7 @@ func CleanupAdministrationFiles(ctx context.Context, folder string) error {
 	var tmpSnippetFolder string
 
 	if len(snippetFiles) > 0 {
-		tmpSnippetFolder, err = os.MkdirTemp(adminFolder, ".shopware-admin-snippets-*")
+		tmpSnippetFolder, err = os.MkdirTemp(folder, ".shopware-admin-snippets-*")
 		if err != nil {
 			return err
 		}
@@ -104,7 +104,7 @@ func CleanupAdministrationFiles(ctx context.Context, folder string) error {
 				return fmt.Errorf("unable to parse %s: %w", file, err)
 			}
 
-			if err := mergo.Merge(&merged, snippetFile); err != nil {
+			if err := mergo.Merge(&merged, snippetFile, mergo.WithOverride); err != nil {
 				return err
 			}
 		}
@@ -127,7 +127,7 @@ func CleanupAdministrationFiles(ctx context.Context, folder string) error {
 
 	logging.FromContext(ctx).Infof("Migrating generated snippet file for %s", folder)
 
-	snippetFolder := filepath.Join(adminFolder, "src", "snippet")
+	snippetFolder := filepath.Join(adminFolder, "src", "app", "snippet")
 	if err := os.MkdirAll(snippetFolder, 0o755); err != nil {
 		return err
 	}
